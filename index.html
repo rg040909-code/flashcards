@@ -7,6 +7,7 @@
 <meta name="description" content="Crée, partage et révise tes flashcards avec répétition espacée.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="vendor/katex/katex.css">
 <title>Flashcards faciles</title>
 <style>
 :root{color-scheme:light;--bg:#f5f5fb;--paper:#fff;--ink:#22213b;--muted:#77768f;--brand:#5b50e8;--brand2:#efedff;--line:#e7e6f1;--green:#16845b;--red:#b94254;--shadow:0 10px 30px #27235b0b}
@@ -26,6 +27,16 @@ input,textarea,select{width:100%;border:1px solid var(--line);border-radius:13px
 .progressbar{height:7px;background:#eeedf6;border-radius:20px;overflow:hidden;margin:10px 0 15px}.progressbar div{height:100%;width:0;background:var(--brand);transition:width .2s}
 .cardline{padding:13px 0;border-bottom:1px solid var(--line)}.cardline:last-child{border-bottom:0}.cardline .front{font-weight:750;white-space:pre-wrap;overflow-wrap:anywhere}.cardline .back{color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}
 .callout{border-radius:15px;background:#f7f6ff;padding:12px;font-size:13px;color:#514b8c}.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.math-tools{display:flex;gap:6px;overflow-x:auto;padding:7px 1px 9px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.math-tools button{flex:0 0 auto;min-width:43px;padding:8px 10px;border:1px solid var(--line);background:#faf9ff;color:var(--ink);font-size:14px;border-radius:10px;white-space:nowrap}
+.math-tools button:active{background:var(--brand2);color:var(--brand)}
+.math-preview{border:1px solid var(--line);border-radius:12px;background:#fbfaff;padding:10px 12px;min-height:42px;margin-top:7px;overflow-x:auto;overflow-y:hidden;color:var(--ink);font-size:15px;line-height:1.65}
+.math-preview:empty:before{content:'Aperçu de la formule…';color:var(--muted);font-size:12px}
+.math-preview .katex-display{margin:.35em 0;overflow-x:auto;overflow-y:hidden}
+.math-content{font-size:1rem;line-height:1.65;font-weight:500;white-space:normal;overflow-wrap:anywhere}
+.math-content .katex{font-size:1.08em}.flashcard .math-content{font-size:clamp(16px,4vw,22px);font-weight:500}.flashcard .math-content .katex{font-size:1.08em}
+.math-error{color:var(--red);font-size:12px}.math-hint{font-size:12px;color:var(--muted);margin:6px 0 0}
+.cardline .math-content{font-size:16px}.cardline .front .math-content{font-weight:750}.cardline .back .math-content{font-weight:400}
 footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 0 4px}
 @media(min-width:650px){.app{padding-left:24px;padding-right:24px}header{padding-top:28px}.panel{padding:22px}.tab{font-size:14px}.flashcard{min-height:300px}}
 </style>
@@ -46,13 +57,20 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 0 4px}
 <section id="view-create" class="hidden">
  <div class="panel"><h2 id="formTitle">Créer un paquet</h2>
  <label for="deckName">Matière ou chapitre</label><input id="deckName" maxlength="100" placeholder="Ex. : Philosophie — La vérité">
- <label for="question">Question / recto</label><textarea id="question" maxlength="3000" placeholder="Écris une question claire…"></textarea>
+ <label for="question">Question / recto</label><textarea id="question" maxlength="3000" placeholder="Écris une question et ses formules…"></textarea>
+ <div class="math-tools" data-target="question" aria-label="Symboles mathématiques pour la question">
+  <button type="button" data-code="\frac{|}{}" title="Fraction">a/b</button><button type="button" data-code="\sqrt{|}" title="Racine carrée">√</button><button type="button" data-code="^{|}" title="Exposant">xⁿ</button><button type="button" data-code="_{|}" title="Indice">xₙ</button><button type="button" data-code="\sum_{|}^{n}" title="Somme">∑</button><button type="button" data-code="\lim_{|}" title="Limite">lim</button><button type="button" data-code="\int_{|}^{b}" title="Intégrale">∫</button><button type="button" data-code="\frac{d}{d x}|" title="Dérivée">d/dx</button><button type="button" data-code="\begin{pmatrix}|&amp;\\&amp;\end{pmatrix}" title="Matrice">▦</button><button type="button" data-code="\vec{|}" title="Vecteur">→</button><button type="button" data-code="\infty" title="Infini">∞</button><button type="button" data-code="\alpha" title="Alpha">α</button><button type="button" data-code="\neq" title="Différent de">≠</button><button type="button" data-code="\leq" title="Inférieur ou égal">≤</button><button type="button" data-code="\cdot" title="Multiplication">·</button><button type="button" data-code="\mathbb{R}" title="Ensemble des réels">ℝ</button>
+ </div><div id="questionPreview" class="math-preview" aria-live="polite"></div>
  <label for="answer">Réponse / verso</label><textarea id="answer" maxlength="6000" placeholder="Une définition, une formule, une explication…"></textarea>
+ <div class="math-tools" data-target="answer" aria-label="Symboles mathématiques pour la réponse">
+  <button type="button" data-code="\frac{|}{}" title="Fraction">a/b</button><button type="button" data-code="\sqrt{|}" title="Racine carrée">√</button><button type="button" data-code="^{|}" title="Exposant">xⁿ</button><button type="button" data-code="_{|}" title="Indice">xₙ</button><button type="button" data-code="\sum_{|}^{n}" title="Somme">∑</button><button type="button" data-code="\lim_{|}" title="Limite">lim</button><button type="button" data-code="\int_{|}^{b}" title="Intégrale">∫</button><button type="button" data-code="\frac{d}{d x}|" title="Dérivée">d/dx</button><button type="button" data-code="\begin{pmatrix}|&amp;\\&amp;\end{pmatrix}" title="Matrice">▦</button><button type="button" data-code="\vec{|}" title="Vecteur">→</button><button type="button" data-code="\infty" title="Infini">∞</button><button type="button" data-code="\alpha" title="Alpha">α</button><button type="button" data-code="\neq" title="Différent de">≠</button><button type="button" data-code="\leq" title="Inférieur ou égal">≤</button><button type="button" data-code="\cdot" title="Multiplication">·</button><button type="button" data-code="\mathbb{R}" title="Ensemble des réels">ℝ</button>
+ </div><div id="answerPreview" class="math-preview" aria-live="polite"></div>
+ <p class="math-hint">LaTeX : une formule seule est détectée automatiquement quand c'est reconnaissable. Pour mélanger texte et maths sans ambiguïté, utilise <code>\( ... \)</code> en ligne ou <code>$$ ... $$</code> pour une formule centrée. L'aperçu est mis à jour pendant la saisie.</p>
  <div class="row" style="margin-top:13px"><button class="primary" id="saveCardBtn">Créer le paquet et enregistrer</button><button class="quiet hidden" id="cancelEditBtn">Annuler</button></div>
  <hr><h3>Créer des cartes depuis un cours (sans IA externe)</h3><p class="small">Colle ton cours puis utilise le format « Question :: Réponse », une carte par ligne. Cette version ne transmet pas tes cours à un service d'IA.</p>
  <textarea id="bulkText" placeholder="Définis la perception. :: La perception organise les sensations.&#10;Que signifie empirique ? :: Qui provient de l'expérience."></textarea>
  <button class="secondary" id="bulkBtn" style="margin-top:10px;width:100%">Ajouter les cartes au paquet sélectionné</button>
- <p class="small">Pour générer automatiquement des questions à partir d'un PDF avec une IA, il faut connecter un service d'IA externe. Cette fonction n'est pas intégrée à cette version hors ligne.</p>
+ <p class="small">Moteur mathématique KaTeX intégré : formules LaTeX, fonctions, fractions, sommes, limites, intégrales, matrices, vecteurs, lettres grecques et nombreuses notations avancées. Les ressources sont incluses pour fonctionner hors ligne.</p>
  </div>
  <div class="panel"><h2>Cartes du paquet</h2><div id="cardsList" class="empty">Choisis ou crée un paquet pour voir ses cartes.</div></div>
 </section>
@@ -70,7 +88,8 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 0 4px}
 </section>
 <footer>Flashcards faciles · Pas de compte · Données locales · Pense à exporter une sauvegarde.</footer>
 </div>
-<script>
+<script type="module">
+import katex from './vendor/katex/katex.mjs';
 const $=id=>document.getElementById(id);
 const KEY='flashcards-faciles-v2';
 let decks=load(), selectedId=decks[0]?.id||null, editingId=null, session=[], idx=0, flipped=false, shuffle=false, dueOnly=true, installPrompt=null, sessionReviewed=0;
@@ -84,7 +103,7 @@ function switchView(v){document.querySelectorAll('.tab').forEach(b=>b.classList.
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 $('newDeckBtn').onclick=()=>{selectedId=null;resetForm();switchView('create');$('deckName').focus()};
 $('quickStudyBtn').onclick=()=>{switchView('study');renderSelects();startSession()};
-function resetQuestion(){editingId=null;$('question').value='';$('answer').value='';$('saveCardBtn').textContent=active()?'Ajouter une carte':'Créer le paquet et enregistrer';$('cancelEditBtn').classList.add('hidden')}
+function resetQuestion(){editingId=null;$('question').value='';$('answer').value='';$('saveCardBtn').textContent=active()?'Ajouter une carte':'Créer le paquet et enregistrer';$('cancelEditBtn').classList.add('hidden');refreshMathPreviews()}
 function resetForm(){$('deckName').value=active()?.name||'';resetQuestion();$('formTitle').textContent=active()?'Ajouter une carte':'Créer un paquet'}
 $('cancelEditBtn').onclick=resetQuestion;
 $('saveCardBtn').onclick=()=>{
@@ -93,7 +112,7 @@ $('saveCardBtn').onclick=()=>{
  let d=active();if(!d){d={id:id(),name,cards:[]};decks.push(d);selectedId=d.id}d.name=name;
  if(editingId){let c=d.cards.find(c=>c.id===editingId);if(c){c.q=q;c.a=a}}
  else d.cards.push({id:id(),q,a,review:{interval:0,reps:0,due:0,seen:0,known:0}});
- $('question').value='';$('answer').value='';editingId=null;$('saveCardBtn').textContent='Ajouter une carte';$('cancelEditBtn').classList.add('hidden');persist();renderCards();$('formTitle').textContent='Ajouter une carte';
+ $('question').value='';$('answer').value='';refreshMathPreviews();editingId=null;$('saveCardBtn').textContent='Ajouter une carte';$('cancelEditBtn').classList.add('hidden');persist();renderCards();$('formTitle').textContent='Ajouter une carte';
 };
 function renderDecks(){let root=$('deckList');root.innerHTML='';$('emptyDecks').classList.toggle('hidden',decks.length>0);decks.forEach(d=>{
  let el=document.createElement('article');el.className='deck';let top=document.createElement('div');top.className='deck-top';let title=document.createElement('h3');title.textContent=d.name;let pill=document.createElement('span');pill.className='pill';pill.textContent=d.cards.length+' carte'+(d.cards.length>1?'s':'');top.append(title,pill);let p=document.createElement('p');let due=d.cards.filter(isDue).length;p.textContent=due+' à revoir · '+d.cards.length+' au total';let actions=document.createElement('div');actions.className='deck-actions';
@@ -101,7 +120,42 @@ function renderDecks(){let root=$('deckList');root.innerHTML='';$('emptyDecks').
  actions.append(btn('Réviser','primary',()=>{selectedId=d.id;switchView('study');renderSelects();startSession()}),btn('Ajouter','secondary',()=>{selectedId=d.id;resetForm();switchView('create')}),btn('•••','quiet',()=>deckMenu(d)));
  el.append(top,p,actions);root.append(el)})}
 function deckMenu(d){let action=prompt('Tape 1 pour renommer, 2 pour exporter, 3 pour supprimer.', '1');if(action==='1'){let n=prompt('Nouveau nom du paquet',d.name);if(n?.trim()){d.name=n.trim();persist()}}else if(action==='2')downloadJSON({format:'flashcards-faciles',version:2,decks:[d]},slug(d.name)+'.json');else if(action==='3'&&confirm('Supprimer ce paquet et toutes ses cartes ?')){decks=decks.filter(x=>x.id!==d.id);if(selectedId===d.id)selectedId=decks[0]?.id||null;persist()}}
-function renderCards(){let root=$('cardsList');root.innerHTML='';let d=active();if(!d){root.className='empty';root.textContent='Crée un paquet ci-dessus ou sélectionne un paquet existant.';return}root.className='';$('deckName').value=d.name;if(!d.cards.length){root.className='empty';root.textContent='Aucune carte dans ce paquet.';return}d.cards.forEach((c,i)=>{let box=document.createElement('div');box.className='cardline';let q=document.createElement('div');q.className='front';q.textContent=(i+1)+'. '+c.q;let a=document.createElement('div');a.className='back';a.textContent=c.a;let row=document.createElement('div');row.className='row';let edit=document.createElement('button');edit.className='secondary';edit.textContent='Modifier';edit.onclick=()=>{editingId=c.id;$('question').value=c.q;$('answer').value=c.a;$('saveCardBtn').textContent='Enregistrer les modifications';$('cancelEditBtn').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})};let del=document.createElement('button');del.className='danger';del.textContent='Supprimer';del.onclick=()=>{if(confirm('Supprimer cette carte ?')){d.cards=d.cards.filter(x=>x.id!==c.id);persist()}};row.append(edit,del);box.append(q,a,row);root.append(box)})}
+function renderFormula(target,latex,display=false){
+ try{target.innerHTML=katex.renderToString(latex.trim(),{displayMode:display,throwOnError:true,strict:'ignore',trust:false,output:'htmlAndMathml',maxExpand:1000});return true}
+ catch(e){target.textContent=latex;target.classList.add('math-error');return false}
+}
+function isLikelyFormula(line){
+ const s=line.trim(); if(!s||s.length>260)return false;
+ const hasLatex=/\\(?:frac|dfrac|tfrac|sqrt|sum|prod|lim|int|begin|end|mathbb|mathrm|mathbf|vec|overline|underline|cdot|times|leq|geq|neq|approx|infty|alpha|beta|theta|pi|Delta|rightarrow|to|log|ln|sin|cos|tan)\b/.test(s);
+ if(hasLatex && !/[àâçéèêëîïôûùüÿœ]/i.test(s) && !/\b(?:soit|donc|avec|pour|si|alors|limite|suite|fonction|on|est|que|dans|lorsque|calculer|montrer|déterminer)\b/i.test(s))return true;
+ const mathStart=/^(?:[\[(]|[+-]?\d|[a-zA-Z](?:[_^](?:\{[^}]+\}|[a-zA-Z0-9]+))*(?:\s*\([^)]*\))?\s*(?:=|<|>|\\leq|\\geq|\\to)|\\(?:lim|sum|int|frac|sqrt|begin)|[∞∑∫√])/;
+ const hasOperator=/(?:=|\^|_|\\(?:leq|geq|neq|to)|[<>])/i.test(s);
+ const proseWords=(s.match(/\b[A-Za-zÀ-ÿ]{4,}\b/g)||[]).filter(w=>!['mathbb','mathrm','mathbf','sqrt','frac','left','right','begin','end','lim','sum','prod','int','sin','cos','tan','log','alpha','beta','theta','infty','cdot','times','leq','geq','neq','to','overline','underline','vec'].includes(w.toLowerCase()));
+ return hasOperator&&mathStart.test(s)&&proseWords.length===0;
+}
+function renderAutoInline(text,target){
+ // Render unambiguous raw LaTeX snippets and common indices/powers without requiring delimiters.
+ const tokenRe=/(\\(?:frac|dfrac|tfrac)\{[^{}]*\}\{[^{}]*\}|\\sqrt(?:\[[^\]]*\])?\{[^{}]*\}|\\(?:mathbb|mathrm|mathbf|overline|underline|vec)\{[^{}]*\}|\\(?:alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|omega|Delta|Sigma|Omega|infty|cdot|times|leq|geq|neq|approx|to|rightarrow|leftarrow|pm|mp|in|notin|subset|cup|cap|forall|exists|land|lor)\b|[A-Za-z][A-Za-z0-9]*_\{[^{}]+\}|[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9]+|[A-Za-z0-9]+\^\{[^{}]+\}|[A-Za-z0-9]+\^[A-Za-z0-9]+)/g;
+ let last=0,m,found=false;while((m=tokenRe.exec(text))){found=true;target.append(document.createTextNode(text.slice(last,m.index)));let span=document.createElement('span');if(!renderFormula(span,m[0],false)){span.classList.remove('math-error');span.textContent=m[0]}target.append(span);last=m.index+m[0].length;}target.append(document.createTextNode(text.slice(last)));return found;
+}
+function renderPlainWithAuto(text,target){
+ const lines=String(text).split('\n');lines.forEach((line,i)=>{if(i)target.append(document.createElement('br'));if(isLikelyFormula(line)){let span=document.createElement('span');span.className='math-content';renderFormula(span,line,false);target.append(span)}else{renderAutoInline(line,target)}});
+}
+function renderRichText(target,input){
+ target.innerHTML='';target.classList.remove('math-error');target.classList.add('math-content');const s=String(input??'');
+ const re=/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$/g;let last=0,m;
+ while((m=re.exec(s))){if(m.index>last){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last,m.index),chunk);target.append(chunk)}let latex=m[1]??m[2]??m[3]??m[4],display=m[1]!==undefined||m[2]!==undefined;let node=document.createElement(display?'div':'span');if(display)node.className='katex-display-wrap';renderFormula(node,latex,display);target.append(node);last=re.lastIndex;}
+ if(last<s.length){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last),chunk);target.append(chunk)}
+ if(!s)target.textContent='';
+}
+function refreshMathPreviews(){for(const id of ['question','answer']){const target=$(id+'Preview');if(target)renderRichText(target,$(id).value)}}
+let lastMathField='question';
+for(const field of ['question','answer']){const el=$(field);el.addEventListener('input',refreshMathPreviews);el.addEventListener('focus',()=>lastMathField=field)}
+document.querySelectorAll('.math-tools button[data-code]').forEach(btn=>btn.addEventListener('click',()=>{
+ const field=$(btn.closest('.math-tools').dataset.target);lastMathField=field.id;field.focus();const code=btn.dataset.code.replace(/&amp;/g,'&'),marker=code.indexOf('|'),insert=code.replace('|','');const start=field.selectionStart??field.value.length,end=field.selectionEnd??start;field.setRangeText(insert,start,end,'end');if(marker>=0){const pos=start+marker;field.setSelectionRange(pos,pos)}field.dispatchEvent(new Event('input',{bubbles:true}));
+}));
+
+function renderCards(){let root=$('cardsList');root.innerHTML='';let d=active();if(!d){root.className='empty';root.textContent='Crée un paquet ci-dessus ou sélectionne un paquet existant.';return}root.className='';$('deckName').value=d.name;if(!d.cards.length){root.className='empty';root.textContent='Aucune carte dans ce paquet.';return}d.cards.forEach((c,i)=>{let box=document.createElement('div');box.className='cardline';let q=document.createElement('div');q.className='front';let num=document.createElement('span');num.textContent=(i+1)+'. ';q.append(num);let qcontent=document.createElement('span');renderRichText(qcontent,c.q);q.append(qcontent);let a=document.createElement('div');a.className='back';renderRichText(a,c.a);let row=document.createElement('div');row.className='row';let edit=document.createElement('button');edit.className='secondary';edit.textContent='Modifier';edit.onclick=()=>{editingId=c.id;$('question').value=c.q;$('answer').value=c.a;refreshMathPreviews();$('saveCardBtn').textContent='Enregistrer les modifications';$('cancelEditBtn').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})};let del=document.createElement('button');del.className='danger';del.textContent='Supprimer';del.onclick=()=>{if(confirm('Supprimer cette carte ?')){d.cards=d.cards.filter(x=>x.id!==c.id);persist()}};row.append(edit,del);box.append(q,a,row);root.append(box)})}
 function renderSelects(){for(let sid of ['studyDeck','shareDeck']){let s=$(sid);let old=s.value;s.innerHTML='';decks.forEach(d=>{let o=document.createElement('option');o.value=d.id;o.textContent=d.name+' ('+d.cards.length+')';s.append(o)});s.value=decks.some(d=>d.id===selectedId)?selectedId:(decks.some(d=>d.id===old)?old:(decks[0]?.id||''));}selectedId=$('studyDeck').value||selectedId}
 $('studyDeck').onchange=e=>selectedId=e.target.value||null;
 $('dueOnlyBtn').onclick=()=>{dueOnly=!dueOnly;$('dueOnlyBtn').textContent='Cartes à revoir : '+(dueOnly?'oui':'non')};
@@ -110,7 +164,7 @@ $('startBtn').onclick=startSession;
 function startSession(){selectedId=$('studyDeck').value||selectedId;let d=active();if(!d||!d.cards.length){$('studyArea').classList.add('hidden');$('studyEmpty').classList.remove('hidden');$('studyEmpty').textContent='Ce paquet ne contient pas encore de cartes.';return}
  let pool=dueOnly?d.cards.filter(isDue):d.cards.slice();if(!pool.length){pool=d.cards.slice();$('studyEmpty').classList.remove('hidden');$('studyEmpty').textContent='Aucune carte due : voici tout de même le paquet complet.'}else $('studyEmpty').classList.add('hidden');
  session=pool.map(c=>({...c}));if(shuffle)session.sort(()=>Math.random()-.5);idx=0;flipped=false;sessionReviewed=0;$('studyArea').classList.remove('hidden');renderStudyCard()}
-function renderStudyCard(){if(!session.length)return;let c=session[idx];$('progress').textContent=`Carte ${idx+1}/${session.length}`;$('sideLabel').textContent=flipped?'Réponse':'Question';$('progressFill').style.width=((idx+1)/session.length*100)+'%';let card=$('flashcard');card.innerHTML='';let wrap=document.createElement('div'),small=document.createElement('small'),txt=document.createElement('div');small.textContent=flipped?'RÉPONSE':'QUESTION';txt.textContent=flipped?c.a:c.q;wrap.append(small,txt);card.append(wrap);$('flipBtn').textContent=flipped?'Voir la question':'Voir la réponse';$('prevBtn').disabled=idx===0;$('scheduleHint').textContent=c.review?.due?'Prochaine révision prévue : '+dateLabel(c.review.due):'Première révision : choisis une réponse pour programmer la suite.'}
+function renderStudyCard(){if(!session.length)return;let c=session[idx];$('progress').textContent=`Carte ${idx+1}/${session.length}`;$('sideLabel').textContent=flipped?'Réponse':'Question';$('progressFill').style.width=((idx+1)/session.length*100)+'%';let card=$('flashcard');card.innerHTML='';let wrap=document.createElement('div'),small=document.createElement('small'),txt=document.createElement('div');small.textContent=flipped?'RÉPONSE':'QUESTION';renderRichText(txt,flipped?c.a:c.q);wrap.append(small,txt);card.append(wrap);$('flipBtn').textContent=flipped?'Voir la question':'Voir la réponse';$('prevBtn').disabled=idx===0;$('scheduleHint').textContent=c.review?.due?'Prochaine révision prévue : '+dateLabel(c.review.due):'Première révision : choisis une réponse pour programmer la suite.'}
 function flip(){if(!session.length)return;flipped=!flipped;renderStudyCard()}
 $('flashcard').onclick=flip;$('flashcard').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}};$('flipBtn').onclick=flip;
 $('prevBtn').onclick=()=>{if(idx>0){idx--;flipped=false;renderStudyCard()}};
