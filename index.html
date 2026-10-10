@@ -121,7 +121,7 @@ function renderDecks(){let root=$('deckList');root.innerHTML='';$('emptyDecks').
  el.append(top,p,actions);root.append(el)})}
 function deckMenu(d){let action=prompt('Tape 1 pour renommer, 2 pour exporter, 3 pour supprimer.', '1');if(action==='1'){let n=prompt('Nouveau nom du paquet',d.name);if(n?.trim()){d.name=n.trim();persist()}}else if(action==='2')downloadJSON({format:'flashcards-faciles',version:2,decks:[d]},slug(d.name)+'.json');else if(action==='3'&&confirm('Supprimer ce paquet et toutes ses cartes ?')){decks=decks.filter(x=>x.id!==d.id);if(selectedId===d.id)selectedId=decks[0]?.id||null;persist()}}
 function renderFormula(target,latex,display=false){
- try{target.innerHTML=katex.renderToString(latex.trim(),{displayMode:display,throwOnError:true,strict:'ignore',trust:false,output:'htmlAndMathml',maxExpand:1000});return true}
+ try{target.innerHTML=katex.renderToString(latex.trim(),{displayMode:display,throwOnError:true,strict:'ignore',trust:false,output:'html',maxExpand:1000});return true}
  catch(e){target.textContent=latex;target.classList.add('math-error');return false}
 }
 function isLikelyFormula(line){
@@ -143,11 +143,7 @@ function renderPlainWithAuto(text,target){
 }
 function renderRichText(target,input){
  target.innerHTML='';target.classList.remove('math-error');target.classList.add('math-content');
- // Fix duplicated plain-text remnants sometimes introduced when copying rendered LaTeX from rich-text sources.
  let s=String(input??'');
- // Example: \\(u_n\\) un -> \\(u_n\\). Keep the LaTeX formula and remove only its immediate plain-text duplicate.
- s=s.replace(/\\\((u[_^]?\{?n\}?|u_n|u\{n\})\\\)\s+u?n\b/gi, (whole, formula)=>'\\('+formula+'\\)');
- s=s.replace(/\\\((u[_^]?\{?n\}?|u_n|u\{n\})\\\)\s+\(u_n\)/gi, (whole, formula)=>'\\('+formula+'\\)');
  const re=/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$/g;let last=0,m;
  while((m=re.exec(s))){if(m.index>last){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last,m.index),chunk);target.append(chunk)}let latex=m[1]??m[2]??m[3]??m[4],display=m[1]!==undefined||m[2]!==undefined;let node=document.createElement(display?'div':'span');if(display)node.className='katex-display-wrap';renderFormula(node,latex,display);target.append(node);last=re.lastIndex;}
  if(last<s.length){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last),chunk);target.append(chunk)}
