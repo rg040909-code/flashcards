@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b50e8">
+<meta name="description" content="Crée, partage et révise tes flashcards avec répétition espacée.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Flashcards faciles</title>
+<style>
+:root{color-scheme:light;--bg:#f5f5fb;--paper:#fff;--ink:#22213b;--muted:#77768f;--brand:#5b50e8;--brand2:#efedff;--line:#e7e6f1;--green:#16845b;--red:#b94254;--shadow:0 10px 30px #27235b0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}button{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer;transition:transform .12s,opacity .12s}button:active{transform:scale(.98)}button:disabled{opacity:.4;cursor:not-allowed}
+.app{max-width:920px;margin:auto;padding:env(safe-area-inset-top) 16px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 0 15px;gap:12px}.brand{display:flex;align-items:center;gap:11px}.logo{height:46px;width:46px;display:grid;place-items:center;border-radius:16px;color:white;background:linear-gradient(145deg,#8177ff,#5145d8);font-size:25px;box-shadow:0 7px 16px #5b50e833}h1{font-size:22px;line-height:1.1;margin:0}.subtitle{color:var(--muted);font-size:12px;margin-top:5px}
+.tabs{display:flex;gap:5px;background:#e9e8f3;padding:5px;border-radius:16px;position:sticky;top:0;z-index:5}.tab{flex:1;padding:10px 4px;background:transparent;color:var(--muted);font-size:13px}.tab.active{background:white;color:var(--ink);box-shadow:0 2px 6px #20204010}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px;box-shadow:var(--shadow)}h2{font-size:18px;margin:0 0 12px}h3{font-size:16px;margin:0 0 5px}p{margin:6px 0}label{display:block;font-size:13px;font-weight:750;margin:12px 0 6px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:13px;padding:12px 13px;background:white;color:var(--ink)}textarea{min-height:88px;resize:vertical}
+.primary{background:var(--brand);color:white}.secondary{background:var(--brand2);color:var(--brand)}.quiet{background:#f0f0f7;color:var(--ink)}.danger{background:#fff0f1;color:var(--red)}.success{background:#e8f8f0;color:var(--green)}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .fit{flex:0 0 auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px}
+.deck{border:1px solid var(--line);border-radius:18px;padding:15px;background:#fff;min-width:0}.deck-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.deck h3{overflow-wrap:anywhere}.deck p{color:var(--muted);font-size:13px}.pill{font-size:11px;padding:4px 8px;border-radius:999px;background:var(--brand2);color:var(--brand);white-space:nowrap}.deck-actions{display:flex;gap:6px;margin-top:12px}.deck-actions button{flex:1;padding:10px 7px;font-size:13px}
+.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:23px 10px}.hero{padding:20px;background:linear-gradient(135deg,#eeeaff,#fff 75%);border-color:#e4e0ff}.hero h2{font-size:21px}.hero .row{margin-top:14px}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f7f6ff;border-radius:15px;padding:12px 9px;text-align:center}.stat strong{display:block;font-size:23px;color:var(--brand)}.stat span{font-size:11px;color:var(--muted)}
+.flashcard{min-height:250px;border-radius:23px;border:1px solid #e2deff;background:radial-gradient(circle at 10% 0,#f0edff,transparent 45%),linear-gradient(150deg,#fff,#faf9ff);display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;font-size:clamp(22px,5.5vw,31px);font-weight:750;white-space:pre-wrap;overflow-wrap:anywhere;cursor:pointer;box-shadow:inset 0 1px 0 white}.flashcard small{display:block;color:var(--brand);font-size:11px;letter-spacing:.12em;margin-bottom:14px}.study-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:12px}.study-buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.progressbar{height:7px;background:#eeedf6;border-radius:20px;overflow:hidden;margin:10px 0 15px}.progressbar div{height:100%;width:0;background:var(--brand);transition:width .2s}
+.cardline{padding:13px 0;border-bottom:1px solid var(--line)}.cardline:last-child{border-bottom:0}.cardline .front{font-weight:750;white-space:pre-wrap;overflow-wrap:anywhere}.cardline .back{color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}
+.callout{border-radius:15px;background:#f7f6ff;padding:12px;font-size:13px;color:#514b8c}.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 0 4px}
+@media(min-width:650px){.app{padding-left:24px;padding-right:24px}header{padding-top:28px}.panel{padding:22px}.tab{font-size:14px}.flashcard{min-height:300px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="logo">✦</div><div><h1>Flashcards faciles</h1><div class="subtitle">Comprendre. Retenir. Réussir.</div></div></div><button id="installBtn" class="secondary hidden">Installer</button></header>
+<nav class="tabs" aria-label="Navigation">
+<button class="tab active" data-view="home">Mes fiches</button><button class="tab" data-view="create">Créer</button><button class="tab" data-view="study">Réviser</button><button class="tab" data-view="stats">Stats</button>
+</nav>
+
+<section id="view-home">
+ <div class="panel hero"><h2>Un petit pas chaque jour ✨</h2><p class="muted">Tes cartes, tes matières, ton rythme. Tes données restent sur cet appareil.</p><div class="row"><button class="primary" id="newDeckBtn">＋ Nouveau paquet</button><button class="secondary" id="quickStudyBtn">Réviser maintenant</button></div></div>
+ <div class="panel"><div class="row"><h2 style="flex:2">Mes paquets</h2><button class="secondary fit" id="importBtn">Importer</button><input id="importFile" type="file" accept=".json,application/json" class="hidden"></div><div id="deckList" class="grid"></div><div id="emptyDecks" class="empty hidden">Aucun paquet pour le moment. Crée ta première fiche !</div></div>
+ <div class="panel"><h2>Partager ou sauvegarder</h2><p class="small">Partage un paquet en exportant un fichier JSON. Le destinataire pourra l'importer dans cette application.</p><div class="row"><button id="exportAllBtn" class="secondary">Exporter tout</button><button id="backupBtn" class="quiet">Sauvegarder mes données</button></div></div>
+</section>
+
+<section id="view-create" class="hidden">
+ <div class="panel"><h2 id="formTitle">Créer un paquet</h2>
+ <label for="deckName">Matière ou chapitre</label><input id="deckName" maxlength="100" placeholder="Ex. : Philosophie — La vérité">
+ <label for="question">Question / recto</label><textarea id="question" maxlength="3000" placeholder="Écris une question claire…"></textarea>
+ <label for="answer">Réponse / verso</label><textarea id="answer" maxlength="6000" placeholder="Une définition, une formule, une explication…"></textarea>
+ <div class="row" style="margin-top:13px"><button class="primary" id="saveCardBtn">Créer le paquet et enregistrer</button><button class="quiet hidden" id="cancelEditBtn">Annuler</button></div>
+ <hr><h3>Créer des cartes depuis un cours (sans IA externe)</h3><p class="small">Colle ton cours puis utilise le format « Question :: Réponse », une carte par ligne. Cette version ne transmet pas tes cours à un service d'IA.</p>
+ <textarea id="bulkText" placeholder="Définis la perception. :: La perception organise les sensations.&#10;Que signifie empirique ? :: Qui provient de l'expérience."></textarea>
+ <button class="secondary" id="bulkBtn" style="margin-top:10px;width:100%">Ajouter les cartes au paquet sélectionné</button>
+ <p class="small">Pour générer automatiquement des questions à partir d'un PDF avec une IA, il faut connecter un service d'IA externe. Cette fonction n'est pas intégrée à cette version hors ligne.</p>
+ </div>
+ <div class="panel"><h2>Cartes du paquet</h2><div id="cardsList" class="empty">Choisis ou crée un paquet pour voir ses cartes.</div></div>
+</section>
+
+<section id="view-study" class="hidden">
+ <div class="panel"><h2>Session de révision</h2><label for="studyDeck">Paquet à réviser</label><select id="studyDeck"></select><div class="row" style="margin-top:10px"><button id="dueOnlyBtn" class="secondary">Cartes à revoir : oui</button><button id="shuffleBtn" class="quiet">Mélanger : non</button></div><button id="startBtn" class="primary" style="width:100%;margin-top:10px">Démarrer la session</button><p class="small">Les cartes dues sont choisies selon tes réponses précédentes. Si aucune carte n'est due, tu peux réviser tout le paquet.</p></div>
+ <div id="studyArea" class="panel hidden"><div class="study-meta"><span id="progress">Carte 1/1</span><span id="sideLabel">Question</span></div><div class="progressbar"><div id="progressFill"></div></div><div id="flashcard" class="flashcard" role="button" tabindex="0" aria-label="Retourner la carte"></div><p class="small" style="text-align:center">Appuie sur la carte pour la retourner.</p><div class="study-buttons"><button id="flipBtn" class="secondary">Voir la réponse</button><button id="prevBtn" class="quiet">← Précédente</button><button id="againBtn" class="danger">À revoir bientôt</button><button id="knowBtn" class="primary">Je savais ✓</button></div><p id="scheduleHint" class="small"></p></div>
+ <div id="studyEmpty" class="panel empty">Choisis un paquet contenant des cartes puis démarre une session.</div>
+</section>
+
+<section id="view-stats" class="hidden">
+ <div class="panel"><h2>Ta progression 📈</h2><div class="statgrid"><div class="stat"><strong id="statDecks">0</strong><span>Paquets</span></div><div class="stat"><strong id="statCards">0</strong><span>Cartes créées</span></div><div class="stat"><strong id="statReviews">0</strong><span>Révisions</span></div></div></div>
+ <div class="panel"><h2>À revoir aujourd'hui</h2><div class="statgrid"><div class="stat"><strong id="statDue">0</strong><span>Cartes dues</span></div><div class="stat"><strong id="statKnown">0%</strong><span>Réponses sues</span></div><div class="stat"><strong id="statStreak">0</strong><span>Jours actifs</span></div></div><div id="statsDetails" style="margin-top:14px"></div></div>
+ <div class="panel"><h2>Exporter un paquet pour un ami</h2><label for="shareDeck">Choisir le paquet</label><select id="shareDeck"></select><button id="shareBtn" class="primary" style="width:100%;margin-top:10px">Partager / exporter ce paquet</button><p class="small">Le partage crée un fichier à envoyer par Messages, AirDrop ou e-mail. Il ne publie pas tes fiches sur Internet.</p></div>
+</section>
+<footer>Flashcards faciles · Pas de compte · Données locales · Pense à exporter une sauvegarde.</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const KEY='flashcards-faciles-v2';
+let decks=load(), selectedId=decks[0]?.id||null, editingId=null, session=[], idx=0, flipped=false, shuffle=false, dueOnly=true, installPrompt=null, sessionReviewed=0;
+function id(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36)}
+function load(){try{let d=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(d))return [];return d.map(x=>({...x,cards:Array.isArray(x.cards)?x.cards.map(c=>({...c,review:c.review||{interval:0,reps:0,due:0,seen:0,known:0}})):[]}))}catch{return []}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(decks));renderAll()}
+function active(){return decks.find(d=>d.id===selectedId)}
+function dateLabel(ts){if(!ts)return 'Jamais';return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}
+function isDue(c){return !c.review?.due||c.review.due<=Date.now()}
+function switchView(v){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));['home','create','study','stats'].forEach(x=>$('view-'+x).classList.toggle('hidden',x!==v));if(v==='create')renderCards();if(v==='study')renderSelects();if(v==='stats')renderStats()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+$('newDeckBtn').onclick=()=>{selectedId=null;resetForm();switchView('create');$('deckName').focus()};
+$('quickStudyBtn').onclick=()=>{switchView('study');renderSelects();startSession()};
+function resetQuestion(){editingId=null;$('question').value='';$('answer').value='';$('saveCardBtn').textContent=active()?'Ajouter une carte':'Créer le paquet et enregistrer';$('cancelEditBtn').classList.add('hidden')}
+function resetForm(){$('deckName').value=active()?.name||'';resetQuestion();$('formTitle').textContent=active()?'Ajouter une carte':'Créer un paquet'}
+$('cancelEditBtn').onclick=resetQuestion;
+$('saveCardBtn').onclick=()=>{
+ let name=$('deckName').value.trim(),q=$('question').value.trim(),a=$('answer').value.trim();
+ if(!name){alert('Indique un nom de paquet.');$('deckName').focus();return}if(!q||!a){alert('Complète la question et la réponse.');return}
+ let d=active();if(!d){d={id:id(),name,cards:[]};decks.push(d);selectedId=d.id}d.name=name;
+ if(editingId){let c=d.cards.find(c=>c.id===editingId);if(c){c.q=q;c.a=a}}
+ else d.cards.push({id:id(),q,a,review:{interval:0,reps:0,due:0,seen:0,known:0}});
+ $('question').value='';$('answer').value='';editingId=null;$('saveCardBtn').textContent='Ajouter une carte';$('cancelEditBtn').classList.add('hidden');persist();renderCards();$('formTitle').textContent='Ajouter une carte';
+};
+function renderDecks(){let root=$('deckList');root.innerHTML='';$('emptyDecks').classList.toggle('hidden',decks.length>0);decks.forEach(d=>{
+ let el=document.createElement('article');el.className='deck';let top=document.createElement('div');top.className='deck-top';let title=document.createElement('h3');title.textContent=d.name;let pill=document.createElement('span');pill.className='pill';pill.textContent=d.cards.length+' carte'+(d.cards.length>1?'s':'');top.append(title,pill);let p=document.createElement('p');let due=d.cards.filter(isDue).length;p.textContent=due+' à revoir · '+d.cards.length+' au total';let actions=document.createElement('div');actions.className='deck-actions';
+ const btn=(label,cls,fn)=>{let b=document.createElement('button');b.textContent=label;b.className=cls;b.onclick=fn;return b};
+ actions.append(btn('Réviser','primary',()=>{selectedId=d.id;switchView('study');renderSelects();startSession()}),btn('Ajouter','secondary',()=>{selectedId=d.id;resetForm();switchView('create')}),btn('•••','quiet',()=>deckMenu(d)));
+ el.append(top,p,actions);root.append(el)})}
+function deckMenu(d){let action=prompt('Tape 1 pour renommer, 2 pour exporter, 3 pour supprimer.', '1');if(action==='1'){let n=prompt('Nouveau nom du paquet',d.name);if(n?.trim()){d.name=n.trim();persist()}}else if(action==='2')downloadJSON({format:'flashcards-faciles',version:2,decks:[d]},slug(d.name)+'.json');else if(action==='3'&&confirm('Supprimer ce paquet et toutes ses cartes ?')){decks=decks.filter(x=>x.id!==d.id);if(selectedId===d.id)selectedId=decks[0]?.id||null;persist()}}
+function renderCards(){let root=$('cardsList');root.innerHTML='';let d=active();if(!d){root.className='empty';root.textContent='Crée un paquet ci-dessus ou sélectionne un paquet existant.';return}root.className='';$('deckName').value=d.name;if(!d.cards.length){root.className='empty';root.textContent='Aucune carte dans ce paquet.';return}d.cards.forEach((c,i)=>{let box=document.createElement('div');box.className='cardline';let q=document.createElement('div');q.className='front';q.textContent=(i+1)+'. '+c.q;let a=document.createElement('div');a.className='back';a.textContent=c.a;let row=document.createElement('div');row.className='row';let edit=document.createElement('button');edit.className='secondary';edit.textContent='Modifier';edit.onclick=()=>{editingId=c.id;$('question').value=c.q;$('answer').value=c.a;$('saveCardBtn').textContent='Enregistrer les modifications';$('cancelEditBtn').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})};let del=document.createElement('button');del.className='danger';del.textContent='Supprimer';del.onclick=()=>{if(confirm('Supprimer cette carte ?')){d.cards=d.cards.filter(x=>x.id!==c.id);persist()}};row.append(edit,del);box.append(q,a,row);root.append(box)})}
+function renderSelects(){for(let sid of ['studyDeck','shareDeck']){let s=$(sid);let old=s.value;s.innerHTML='';decks.forEach(d=>{let o=document.createElement('option');o.value=d.id;o.textContent=d.name+' ('+d.cards.length+')';s.append(o)});s.value=decks.some(d=>d.id===selectedId)?selectedId:(decks.some(d=>d.id===old)?old:(decks[0]?.id||''));}selectedId=$('studyDeck').value||selectedId}
+$('studyDeck').onchange=e=>selectedId=e.target.value||null;
+$('dueOnlyBtn').onclick=()=>{dueOnly=!dueOnly;$('dueOnlyBtn').textContent='Cartes à revoir : '+(dueOnly?'oui':'non')};
+$('shuffleBtn').onclick=()=>{shuffle=!shuffle;$('shuffleBtn').textContent='Mélanger : '+(shuffle?'oui':'non')};
+$('startBtn').onclick=startSession;
+function startSession(){selectedId=$('studyDeck').value||selectedId;let d=active();if(!d||!d.cards.length){$('studyArea').classList.add('hidden');$('studyEmpty').classList.remove('hidden');$('studyEmpty').textContent='Ce paquet ne contient pas encore de cartes.';return}
+ let pool=dueOnly?d.cards.filter(isDue):d.cards.slice();if(!pool.length){pool=d.cards.slice();$('studyEmpty').classList.remove('hidden');$('studyEmpty').textContent='Aucune carte due : voici tout de même le paquet complet.'}else $('studyEmpty').classList.add('hidden');
+ session=pool.map(c=>({...c}));if(shuffle)session.sort(()=>Math.random()-.5);idx=0;flipped=false;sessionReviewed=0;$('studyArea').classList.remove('hidden');renderStudyCard()}
+function renderStudyCard(){if(!session.length)return;let c=session[idx];$('progress').textContent=`Carte ${idx+1}/${session.length}`;$('sideLabel').textContent=flipped?'Réponse':'Question';$('progressFill').style.width=((idx+1)/session.length*100)+'%';let card=$('flashcard');card.innerHTML='';let wrap=document.createElement('div'),small=document.createElement('small'),txt=document.createElement('div');small.textContent=flipped?'RÉPONSE':'QUESTION';txt.textContent=flipped?c.a:c.q;wrap.append(small,txt);card.append(wrap);$('flipBtn').textContent=flipped?'Voir la question':'Voir la réponse';$('prevBtn').disabled=idx===0;$('scheduleHint').textContent=c.review?.due?'Prochaine révision prévue : '+dateLabel(c.review.due):'Première révision : choisis une réponse pour programmer la suite.'}
+function flip(){if(!session.length)return;flipped=!flipped;renderStudyCard()}
+$('flashcard').onclick=flip;$('flashcard').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}};$('flipBtn').onclick=flip;
+$('prevBtn').onclick=()=>{if(idx>0){idx--;flipped=false;renderStudyCard()}};
+function rate(known){if(!session.length)return;if(!flipped){flip();return}let card=session[idx],d=decks.find(x=>x.id===selectedId),real=d?.cards.find(c=>c.id===card.id);if(real){let r=real.review||(real.review={interval:0,reps:0,due:0,seen:0,known:0});r.seen=(r.seen||0)+1;if(known){r.known=(r.known||0)+1;r.reps=(r.reps||0)+1;r.interval=r.interval===0?1:r.interval===1?3:Math.min(60,Math.round(r.interval*2.2));}else{r.reps=0;r.interval=0.04;}r.due=Date.now()+r.interval*24*60*60*1000;let today=new Date().toDateString();let activity=JSON.parse(localStorage.getItem('fc-activity')||'{}');activity[today]=(activity[today]||0)+1;localStorage.setItem('fc-activity',JSON.stringify(activity));persist()}
+ sessionReviewed++;if(!known){let c=session.splice(idx,1)[0];session.push(c)}else if(idx<session.length-1){idx++}else if(session.length){finishSession();return}flipped=false;if(session.length&&idx>=session.length)idx=0;if(session.length)renderStudyCard();else finishSession()}
+function finishSession(){ $('studyArea').classList.add('hidden');$('studyEmpty').classList.remove('hidden');$('studyEmpty').textContent='Session terminée ! Bravo pour ce temps de révision. 🎉';renderStats()}
+$('againBtn').onclick=()=>rate(false);$('knowBtn').onclick=()=>rate(true);
+function renderStats(){let cards=decks.flatMap(d=>d.cards),seen=cards.reduce((n,c)=>n+(c.review?.seen||0),0),known=cards.reduce((n,c)=>n+(c.review?.known||0),0),due=cards.filter(isDue).length;$('statDecks').textContent=decks.length;$('statCards').textContent=cards.length;$('statReviews').textContent=seen;$('statDue').textContent=due;$('statKnown').textContent=seen?Math.round(known/seen*100)+'%':'—';let act={};try{act=JSON.parse(localStorage.getItem('fc-activity')||'{}')}catch{}let keys=Object.keys(act).filter(k=>act[k]>0).sort((a,b)=>new Date(b)-new Date(a));let streak=0;for(let i=0;i<keys.length;i++){let day=new Date();day.setDate(day.getDate()-i);if(act[day.toDateString()])streak++;else break}$('statStreak').textContent=streak;let root=$('statsDetails');root.innerHTML='';if(!decks.length){root.className='empty';root.textContent='Crée des cartes pour voir ta progression.';return}root.className='';decks.forEach(d=>{let p=document.createElement('p');p.textContent=d.name+` — ${d.cards.filter(isDue).length} à revoir sur ${d.cards.length}`;root.append(p)})}
+function renderAll(){renderDecks();renderCards();renderSelects();renderStats()}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-|-$/g,'')||'flashcards'}
+function downloadJSON(data,filename){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportAllBtn').onclick=()=>downloadJSON({format:'flashcards-faciles',version:2,decks},'flashcards-sauvegarde.json');
+$('backupBtn').onclick=()=>downloadJSON({format:'flashcards-faciles',version:2,decks,activity:localStorage.getItem('fc-activity')||'{}'},'flashcards-backup.json');
+$('shareBtn').onclick=async()=>{let d=decks.find(x=>x.id===$('shareDeck').value);if(!d){alert('Choisis un paquet.');return}let blob=new Blob([JSON.stringify({format:'flashcards-faciles',version:2,decks:[{...d,cards:d.cards.map(c=>({id:c.id,q:c.q,a:c.a,review:{interval:0,reps:0,due:0,seen:0,known:0}}))}]},null,2)],{type:'application/json'});let file=new File([blob],slug(d.name)+'.json',{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:'Flashcards : '+d.name,text:'Voici mon paquet de flashcards.',files:[file]})}catch(e){if(e.name!=='AbortError')alert('Partage impossible sur cet appareil. Le fichier va être téléchargé.')}}else{downloadJSON({format:'flashcards-faciles',version:2,decks:[{...d,cards:d.cards.map(c=>({id:c.id,q:c.q,a:c.a,review:{interval:0,reps:0,due:0,seen:0,known:0}}))}]},slug(d.name)+'.json');alert('Fichier exporté. Envoie-le à ton ami via Messages, AirDrop ou e-mail.')}};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let data=JSON.parse(await f.text());let incoming=Array.isArray(data)?data:data.decks;if(!Array.isArray(incoming)||!incoming.every(d=>d.name&&Array.isArray(d.cards)))throw Error();incoming.forEach(d=>decks.push({id:id(),name:String(d.name).slice(0,100),cards:d.cards.filter(c=>c.q&&c.a).map(c=>({id:id(),q:String(c.q),a:String(c.a),review:{interval:0,reps:0,due:0,seen:0,known:0}}))}));selectedId=decks.at(-incoming.length)?.id||selectedId;persist();alert('Paquet(s) importé(s) !')}catch{alert('Fichier invalide. Importe un JSON exporté par Flashcards faciles.')}e.target.value=''};
+$('bulkBtn').onclick=()=>{let d=active();if(!d){alert('Crée d’abord un paquet et enregistre une première carte.');return}let lines=$('bulkText').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),added=0;for(let line of lines){let sep=line.indexOf('::');if(sep<1)continue;let q=line.slice(0,sep).trim(),a=line.slice(sep+2).trim();if(q&&a){d.cards.push({id:id(),q,a,review:{interval:0,reps:0,due:0,seen:0,known:0}});added++}}if(!added){alert('Aucune carte reconnue. Utilise une ligne par carte au format Question :: Réponse.');return}$('bulkText').value='';persist();alert(added+' carte(s) ajoutée(s).')};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('installBtn').classList.remove('hidden')});
+$('installBtn').onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null}else alert('Sur iPhone : ouvre cette application dans Safari, touche Partager, puis « Sur l’écran d’accueil ».')};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+renderAll();resetForm();
+</script>
+</body></html>
