@@ -142,7 +142,12 @@ function renderPlainWithAuto(text,target){
  const lines=String(text).split('\n');lines.forEach((line,i)=>{if(i)target.append(document.createElement('br'));if(isLikelyFormula(line)){let span=document.createElement('span');span.className='math-content';renderFormula(span,line,false);target.append(span)}else{renderAutoInline(line,target)}});
 }
 function renderRichText(target,input){
- target.innerHTML='';target.classList.remove('math-error');target.classList.add('math-content');const s=String(input??'');
+ target.innerHTML='';target.classList.remove('math-error');target.classList.add('math-content');
+ // Fix duplicated plain-text remnants sometimes introduced when copying rendered LaTeX from rich-text sources.
+ let s=String(input??'');
+ // Example: \\(u_n\\) un -> \\(u_n\\). Keep the LaTeX formula and remove only its immediate plain-text duplicate.
+ s=s.replace(/\\\((u[_^]?\{?n\}?|u_n|u\{n\})\\\)\s+u?n\b/gi, (whole, formula)=>'\\('+formula+'\\)');
+ s=s.replace(/\\\((u[_^]?\{?n\}?|u_n|u\{n\})\\\)\s+\(u_n\)/gi, (whole, formula)=>'\\('+formula+'\\)');
  const re=/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$/g;let last=0,m;
  while((m=re.exec(s))){if(m.index>last){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last,m.index),chunk);target.append(chunk)}let latex=m[1]??m[2]??m[3]??m[4],display=m[1]!==undefined||m[2]!==undefined;let node=document.createElement(display?'div':'span');if(display)node.className='katex-display-wrap';renderFormula(node,latex,display);target.append(node);last=re.lastIndex;}
  if(last<s.length){let chunk=document.createElement('span');renderPlainWithAuto(s.slice(last),chunk);target.append(chunk)}
